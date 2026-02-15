@@ -583,6 +583,39 @@ class SandboxSupervisor:
         except Exception as e:
             self.log.error("git.identity_error", exc=e)
 
+    async def configure_git_credentials(self) -> None:
+        """Configure git credential helper for authenticated push/pull.
+
+        Sets up the git credential store with the GitHub App token so that
+        any git push/pull/fetch operation authenticates automatically. This
+        is a defense-in-depth measure alongside the remote URL token embedding.
+        """
+        if not self.github_app_token or not self.repo_path.exists():
+            self.log.info(
+                "git.credentials_skip",
+                reason="no_token" if not self.github_app_token else "no_repo",
+            )
+            return
+
+        try:
+            creds_file = Path("/tmp/git-credentials")
+            creds_file.write_text(f"https://x-access-token:{self.github_app_token}@github.com\n")
+            creds_file.chmod(0o600)
+
+            await asyncio.create_subprocess_exec(
+                "git",
+                "config",
+                "--local",
+                "credential.helper",
+                f"store --file={creds_file}",
+                cwd=self.repo_path,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            self.log.info("git.credentials_configured")
+        except Exception as e:
+            self.log.error("git.credentials_error", exc=e)
+
     async def run_setup_script(self) -> bool:
         """
         Run .openinspect/setup.sh if it exists in the cloned repo.
@@ -770,8 +803,9 @@ class SandboxSupervisor:
                 # Fresh sandbox - full git clone and sync
                 git_sync_success = await self.perform_git_sync()
 
-            # Phase 2: Configure git identity (if repo was cloned)
+            # Phase 2: Configure git identity and credentials (if repo was cloned)
             await self.configure_git_identity()
+            await self.configure_git_credentials()
 
             # Phase 2.5: Run repo setup script (fresh clone only)
             setup_success: bool | None = None
@@ -795,6 +829,7 @@ class SandboxSupervisor:
                 git_sync_success=git_sync_success,
                 setup_success=setup_success,
                 opencode_ready=opencode_ready,
+                has_github_token=bool(self.github_app_token),
                 duration_ms=duration_ms,
                 outcome="success",
             )

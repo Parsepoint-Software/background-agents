@@ -95,6 +95,10 @@ export interface RestoreConfig {
   userEnvVars?: Record<string, string>;
   /** Sandbox lifetime in seconds. Defaults to DEFAULT_SANDBOX_TIMEOUT_SECONDS. */
   timeoutSeconds?: number;
+  /** Git user name for commits */
+  gitUserName?: string;
+  /** Git user email for commits */
+  gitUserEmail?: string;
   /** Trace ID for correlation */
   traceId?: string;
   /** Request ID for correlation */

@@ -111,6 +111,8 @@ export class ModalSandboxProvider implements SandboxProvider {
             repo_name: config.repoName,
             provider: config.provider,
             model: config.model,
+            git_user_name: config.gitUserName || null,
+            git_user_email: config.gitUserEmail || null,
           },
           sandbox_id: config.sandboxId,
           control_plane_url: config.controlPlaneUrl,

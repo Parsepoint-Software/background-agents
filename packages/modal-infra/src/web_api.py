@@ -137,6 +137,14 @@ async def api_create_sandbox(
                     private_key=private_key,
                     installation_id=installation_id,
                 )
+                log.info("github.token_generated")
+            else:
+                log.warn(
+                    "github.token_skip",
+                    has_app_id=bool(app_id),
+                    has_private_key=bool(private_key),
+                    has_installation_id=bool(installation_id),
+                )
         except Exception as e:
             log.warn("github.token_error", exc=e)
 
@@ -519,6 +527,14 @@ async def api_restore_sandbox(
                     app_id=app_id,
                     private_key=private_key,
                     installation_id=installation_id,
+                )
+                log.info("github.token_generated")
+            else:
+                log.warn(
+                    "github.token_skip",
+                    has_app_id=bool(app_id),
+                    has_private_key=bool(private_key),
+                    has_installation_id=bool(installation_id),
                 )
         except Exception as e:
             log.warn("github.token_error", exc=e)

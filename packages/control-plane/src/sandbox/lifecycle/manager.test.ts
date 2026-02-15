@@ -98,6 +98,10 @@ function createMockStorage(
       calls.push("getSession");
       return session;
     }),
+    getOwnerParticipant: vi.fn(() => {
+      calls.push("getOwnerParticipant");
+      return null;
+    }),
     getUserEnvVars: vi.fn(async () => {
       calls.push("getUserEnvVars");
       return userEnvVars;

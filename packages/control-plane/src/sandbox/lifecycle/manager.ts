@@ -56,6 +56,8 @@ export interface SandboxStorage {
   getSandboxWithCircuitBreaker(): SandboxCircuitBreakerInfo | null;
   /** Get current session */
   getSession(): SessionRow | null;
+  /** Get the owner participant (for git identity) */
+  getOwnerParticipant(): { github_name: string | null; github_email: string | null } | null;
   /** Get user env vars for sandbox injection */
   getUserEnvVars(): Promise<Record<string, string> | undefined>;
   /** Update sandbox status */
@@ -299,6 +301,7 @@ export class SandboxLifecycleManager {
 
       const userEnvVars = await this.storage.getUserEnvVars();
       const { provider, model: modelId } = this.resolveProviderAndModel(session);
+      const owner = this.storage.getOwnerParticipant();
 
       // Create sandbox via provider
       const createConfig: CreateSandboxConfig = {
@@ -311,6 +314,8 @@ export class SandboxLifecycleManager {
         provider,
         model: modelId,
         userEnvVars,
+        gitUserName: owner?.github_name ?? undefined,
+        gitUserEmail: owner?.github_email ?? undefined,
       };
 
       const result = await this.provider.createSandbox(createConfig);
@@ -409,6 +414,7 @@ export class SandboxLifecycleManager {
 
       const userEnvVars = await this.storage.getUserEnvVars();
       const { provider, model: modelId } = this.resolveProviderAndModel(session);
+      const owner = this.storage.getOwnerParticipant();
 
       const result = await this.provider.restoreFromSnapshot({
         snapshotImageId,
@@ -422,6 +428,8 @@ export class SandboxLifecycleManager {
         model: modelId,
         userEnvVars,
         timeoutSeconds: this.config.sandboxTimeoutSeconds,
+        gitUserName: owner?.github_name ?? undefined,
+        gitUserEmail: owner?.github_email ?? undefined,
       });
 
       if (result.success) {

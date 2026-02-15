@@ -315,12 +315,16 @@ class SandboxManager:
             provider = session_config.get("provider", "anthropic")
             model = session_config.get("model", "claude-sonnet-4-5")
             session_id = session_config.get("session_id", "")
+            git_user_name = session_config.get("git_user_name")
+            git_user_email = session_config.get("git_user_email")
         else:
             repo_owner = session_config.repo_owner
             repo_name = session_config.repo_name
             provider = session_config.provider
             model = session_config.model
             session_id = session_config.session_id
+            git_user_name = session_config.git_user.name if session_config.git_user else None
+            git_user_email = session_config.git_user.email if session_config.git_user else None
 
         # Use provided sandbox_id or generate one
         if not sandbox_id:
@@ -351,6 +355,11 @@ class SandboxManager:
                         "repo_name": repo_name,
                         "provider": provider,
                         "model": model,
+                        **(
+                            {"git_user": {"name": git_user_name, "email": git_user_email}}
+                            if git_user_name and git_user_email
+                            else {}
+                        ),
                     }
                 ),
             }

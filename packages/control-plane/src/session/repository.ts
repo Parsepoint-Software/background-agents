@@ -452,6 +452,12 @@ export class SessionRepository {
     );
   }
 
+  getOwnerParticipant(): ParticipantRow | null {
+    const result = this.sql.exec(`SELECT * FROM participants WHERE role = 'owner' LIMIT 1`);
+    const rows = result.toArray() as unknown as ParticipantRow[];
+    return rows[0] ?? null;
+  }
+
   listParticipants(): ParticipantRow[] {
     const result = this.sql.exec(`SELECT * FROM participants ORDER BY joined_at`);
     return result.toArray() as unknown as ParticipantRow[];

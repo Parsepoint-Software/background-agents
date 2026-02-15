@@ -5,7 +5,15 @@ and from inside sandboxes (which don't have modal). We use lazy imports to avoid
 ModuleNotFoundError when running inside a sandbox.
 """
 
-from .types import GitSyncStatus, GitUser, SandboxEvent, SandboxStatus, SessionConfig
+
+def __getattr__(name: str):
+    """Lazy-import pydantic types to avoid pulling in pydantic at package import time."""
+    _types = {"GitSyncStatus", "GitUser", "SandboxEvent", "SandboxStatus", "SessionConfig"}
+    if name in _types:
+        from . import types
+
+        return getattr(types, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 # Manager is only available when running in Modal function context (not inside sandbox)
